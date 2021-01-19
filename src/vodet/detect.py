@@ -14,8 +14,8 @@ from matplotlib import pyplot as plt
 import os
 import shutil
 
-from python.set_images import read_labelme
-from python.utils import discrete_cmap
+from set_images import read_labelme
+from utils import discrete_cmap
 
 # bounding box selection 
 ## Intersection over Union
