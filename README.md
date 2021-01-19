@@ -15,5 +15,5 @@ Because previous object-sugestion methods (e.g. selective search) tend not to be
 ### Label estimation for each patches
 After getting a patch with a sliding window, the semi-supervised object classifier runs to estimate its label. This is based on Gaussian Mixtured Variational Auto Encoder (GMVAE) proposed by [Rui Shu](http://ruishu.io/2016/12/25/gmvae/).
 
-### Usage
-#### Data preparation
+## Usage
+### Data preparation
