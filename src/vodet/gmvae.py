@@ -18,9 +18,9 @@ import pixyz
 from pixyz.losses import ELBO
 from pixyz.models import Model
 
-from python.utils import set_patches, plot_latent, plot_reconstruction
-from python.distributions import Generator, Inference, Classifier, Prior
-from python.detect import Detector
+from utils import set_patches, plot_latent, plot_reconstruction
+from distributions import Generator, Inference, Classifier, Prior
+from detect import Detector
 
 class GMVAE:
     def __init__(self, data_dirs):
