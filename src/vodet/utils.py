@@ -18,6 +18,18 @@ import torch
 import datetime
 
 def read_labelme(in_dir):
+    """
+    Read labelme's json files and convert it into pd.DataFrame
+
+    Parameters
+    ----------
+    in_dir : str
+        The directory where json files are stored.
+
+    Returns
+    -------
+    dataframe : pd.DataFrame
+    """
     files = glob(in_dir + "/*.json")
     dataframe = pd.DataFrame({"image":[], "label":[], "xmin":[], "ymin":[], "xmax":[], "ymax":[]})
     for f in files:
@@ -33,6 +45,16 @@ def read_labelme(in_dir):
     return dataframe
 
 def make_patches_labelled(data_dir, out_dir, label_data):
+    """
+    Split source images with labels.
+
+    Parameters
+    ----------
+    data_dir : str
+        The path for data directory.
+    out_dir : str
+        The path for output (patched images) directory.
+    """
     img_paths = [str(p) for p in glob(data_dir + "/source/*") \
         if re.search(".*\.[jpg, jpeg, JPG, png]", p)] 
     if os.path.exists(out_dir):
@@ -83,6 +105,18 @@ def make_patches_labelled(data_dir, out_dir, label_data):
 
 
 def make_patches_unlabelled(data_dir, out_dir, label_data):
+    """
+    Split source images into patches. The patch sizes are determined by label_data.
+
+    Parameters
+    ----------
+    data_dir : str
+        The path for data directory.
+    out_dir : str
+        The path for output (patched images) directory.
+    label_data : pd.DataFrame
+        A dataframe of label data. This will be used to determine the sizes of patches.
+    """
     img_paths = [str(p) for p in glob(data_dir + "/source/*") \
         if re.search(".*\.[jpg, jpeg, JPG, png]", p)] 
     if os.path.exists(out_dir):
@@ -225,6 +259,19 @@ def plot_latent(x, y, f, q, y_dim):
 
 
 def exif_date(in_dir):
+    """
+    Read Exif data of images in a directory and returns a dataframe of file names of images and their shooting date.
+
+    Parameters
+    ----------
+    in_dir : str
+        Path for the directory of images.
+
+    Returns
+    -------
+    df : pd.DataFrame
+        A dataframe of filename and shooting date.         
+    """
     files = [str(p) for p in glob(in_dir + "/**/*", recursive=True) \
         if re.search(".*\.[jpg, jpeg, JPG, png]", p)] 
     

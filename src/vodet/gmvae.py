@@ -23,16 +23,49 @@ from vodet.distributions import Generator, Inference, Classifier, Prior
 from vodet.detect import Detector
 
 class GMVAE:
+    """
+    GMVAE object for object detection.
+    """
     def __init__(self, data_dirs):
+        """
+        Parameters
+        ----------
+        data_dirs : dict
+            A dict that contains
+            - "train":path_for_train_directory
+            - "validation":path_for_validation_directory
+            - "unlabelled":path_for_unlabelled_directory
+            All directories must have "source" subdirectory that contains source images.
+            The "train" and "validation" directory must also have "labels" directory that contains label data files (VoTT csv export or labelme json output)
+        """
         self.data_dirs = data_dirs
 
     def set_patches(self, label_type):
+        """
+        Split source images into patches with labels to train GMVAE classifier.
+
+        Parameters
+        ----------
+        label_type : str
+            The type of label images. Either "VoTT" for VoTT's csv export or "labelme" for labelme's json output.
+        """
         set_patches(self.data_dirs, label_type)
     
-    def set_dataloaders(self, batch_size, transform):
-        unlabelled_ds = datasets.ImageFolder(self.data_dirs["unlabelled"]+"/patches", transform["unlabelled"])
-        train_ds = datasets.ImageFolder(self.data_dirs["train"]+"/patches", transform["labelled"])
-        val_ds = datasets.ImageFolder(self.data_dirs["validation"]+"/patches", transform["validation"])
+    def set_dataloaders(self, batch_size, transforms):
+        """
+        Set up dataloaders for training.
+
+        Parameters
+        ----------
+        batch_size : int
+            The batch size of dataloaders.
+        transforms: dict 
+            A dict of transforms each made by torchvision.transforms.Comose().
+            The keys must be "train", "validation" and "unlabelled"
+        """
+        unlabelled_ds = datasets.ImageFolder(self.data_dirs["unlabelled"]+"/patches", transforms["unlabelled"])
+        train_ds = datasets.ImageFolder(self.data_dirs["train"]+"/patches", transforms["labelled"])
+        val_ds = datasets.ImageFolder(self.data_dirs["validation"]+"/patches", transforms["validation"])
         self.unlabelled = DataLoader(unlabelled_ds, batch_size)
         self.labelled = DataLoader(train_ds, batch_size, shuffle = True)
         self.validation = DataLoader(val_ds, batch_size)
@@ -40,6 +73,16 @@ class GMVAE:
         self.y_dim = len(self.classes)
     
     def set_model(self, z_dim, device):
+        """
+        Set up model for training.
+        
+        Parameters
+        ----------
+        z_dim : int
+            Dimension of the latent variable.
+        device : str
+            The name of device for training.
+        """
         # distributions for supervised learning
         self.p = Generator(z_dim).to(device)
         self.q = Inference(z_dim, self.y_dim).to(device)
@@ -129,6 +172,17 @@ class GMVAE:
         return test_loss, recall, prec
     
     def train(self, epochs, precision_th=90):
+        """
+        Train model.
+
+        Parameters
+        ----------
+        epochs : int
+            Epochs to train.
+        precision_th : float
+            Precision threshold (percent). 
+            If the minimum precision in each epoch is larger than this value and the test loss is lower than previous "best model", the "best model" will be overwritten.
+        """
         dt_now = datetime.datetime.now()
         exp_time = dt_now.strftime('%Y%m%d_%H:%M:%S')
         v = pixyz.__version__
@@ -188,6 +242,27 @@ class GMVAE:
         writer.close()
     
     def detector(self, label_type = "labelme", conf_th = 0.95, iou_th = 0.3, step_ratio = 0.5, input_size = [24, 24]):
+        """
+        Create a Detector object.
+
+        Parameters
+        ----------
+        label_type : str
+            The type of label data, either "VoTT" (for VoTT's csv export) or "labelme" (for labelme's json export).
+        conf_th : float default 0.99
+            The confidence threshold for each proposed bounding box.
+        iou_th : float default 0.3
+            The threshold of IoU value for Non-Maximum Supression of bounding boxes.
+        step_ratio : float default 0.5
+            The ratio between the step size and width or height of sliding windows.
+        input_size : list of int
+            The input size of the classifier
+        
+        Returns
+        -------
+        d : vodet.detect.Detector
+            A Detector instance.
+        """
         if label_type == "VoTT":
             labels_path = glob(self.data_dirs["train"] + "/labels/*.csv")[0]
         elif label_type == "labelme":
