@@ -17,3 +17,7 @@ After getting a patch with a sliding window, the semi-supervised object classifi
 
 ## Usage
 ### Data preparation
+The data directory should have three subdirectories: `train`, `validation` and `unlabelled`.
+The `train` and `validation` directory should have `source` and `labels` subdirectory, that contain source images and label data respectively.
+The `unlabelled` directory should only have `source` directory.
+The label data should be [VoTT](https://github.com/microsoft/VoTT)'s csv-export (sigle CSV file) or [labelme](https://github.com/wkentaro/labelme)'s json files.
