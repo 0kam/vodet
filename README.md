@@ -16,6 +16,11 @@ Because previous object-sugestion methods (e.g. selective search) tend not to be
 After getting a patch with a sliding window, the semi-supervised object classifier runs to estimate its label. This is based on Gaussian Mixtured Variational Auto Encoder (GMVAE) proposed by [Rui Shu](http://ruishu.io/2016/12/25/gmvae/).
 
 ## Usage
+### Image Annotating
+First, you have to make annotation data to train a classifier.
+You should annotate at least two images; one for training and another for validating the model.
+The annotation shape have to be rectangulars. Since `vodet` use sliding-window method to detect the objects, very small sizes of rectangulars relative to the size of the image will cause very slow speed of detection. You should also make margines little bit larger than the shilhouette of objects for better classification acuraccy.
+You can use either [labelme](https://github.com/wkentaro/labelme) or [VoTT](https://github.com/microsoft/VoTT). Because labelme supports zooming of images, I recommend you to use it especially for high-resolution images.
 ### Setting up data directories
 The data directory should have three subdirectories: `train`, `validation` and `unlabelled`.
 The `train` and `validation` directory should have `source` and `labels` subdirectory, that contain source images and label data respectively.
@@ -24,8 +29,18 @@ The label data should be [VoTT](https://github.com/microsoft/VoTT)'s csv-export 
 ### Create an GMVAE instance
 ```
 from vodet.gmvae import GMVAE
-gmvae = GMVAE()
+data_dirs = {
+    "train" = path_for_your_train_directory,
+    "validation" = path_for_your_validation_directory,
+    "unlabelled" = path_for_your_unlabelled_directory
+}
+gmvae = GMVAE(data_dirs)
 ```
 ### Generate patch images
 Inorder to train the GMVAE classifier model, first we separate source images into patches with labels based on label data.
-With train and validation images, vodet read the label data created by annotation tools. Patches that intersects with rectangular annotations will be labelled as the label name (e.g. `flower`) and otherwise the label name will be `others`.
+With train and validation images, vodet read the label data created by annotation tools. A patch that intersects with rectangular annotations will be labelled as the label name (e.g. `flower`), otherwise `others`.
+```
+gmvae.set_patches("labelme") # for labelme
+gmvae.set_patches("VoTT") # for VoTT
+```
+
