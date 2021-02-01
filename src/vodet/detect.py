@@ -382,6 +382,7 @@ class Detector:
         labels.remove("other")
         df.plot.bar(y=labels, rot = "45", figsize=(6, 4))
         plt.subplots_adjust(bottom=0.2)
+        plt.tight_layout()
         plt.savefig(out_path)
         return df
         

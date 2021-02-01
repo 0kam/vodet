@@ -13,6 +13,7 @@ from tqdm import tqdm
 import datetime
 import copy
 from glob import glob
+from pathlib import Path
 
 import pixyz
 from pixyz.losses import ELBO
@@ -185,9 +186,8 @@ class GMVAE:
         """
         dt_now = datetime.datetime.now()
         exp_time = dt_now.strftime('%Y%m%d_%H:%M:%S')
-        v = pixyz.__version__
-        nb_name = 'gmvae'
-        writer = SummaryWriter("runs/" + v + "." + nb_name + exp_time)
+        writer = SummaryWriter(str(Path(self.data_dirs["train"]).parent) + \
+            "runs/" + "vodet_gmvae_" + exp_time)
         
         _x = []
         _y = []
