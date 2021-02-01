@@ -1,6 +1,7 @@
 from glob import glob
 from PIL import Image, ImageDraw
 import torch
+import torch.nn.functional as F 
 import numpy as np
 import pandas as pd
 import statistics as stat
@@ -97,7 +98,7 @@ def nms(bboxes: list, scores: list, labels: list, iou_threshold: float) -> (list
     return new_bboxes, new_labels
 
 
-def detect(classifier, image_path, labels_path, out_path, classes, label_type, bb_color, conf_th=0.99, iou_th=0.3, step_ratio = 0.5, input_size=[24,24], device="cuda:0"):
+def detect_old(classifier, image_path, labels_path, out_path, classes, label_type, bb_color, conf_th=0.99, iou_th=0.3, step_ratio = 0.5, input_size=[24,24], device="cuda:0"):
     """
     Detect object with GMVAE's classifier and sliding windows.
 
@@ -233,6 +234,151 @@ def detect(classifier, image_path, labels_path, out_path, classes, label_type, b
     
     img.save(out_path)
     return detected_numbers
+
+
+def detect(classifier, image_path, labels_path, out_path, classes, label_type, bb_color, conf_th=0.99, iou_th=0.3, step_ratio = 0.5, input_size=[24,24], device="cuda:0"):
+    """
+    Detect object with GMVAE's classifier and sliding windows.
+
+    Parameters
+    ----------
+    classifier : vodet.distributions.Classifier
+        A trained Classifier object.
+    image_path : str
+        The path for the target image.
+    labels_path : str
+        The path for the annotation data of train dataset. If label_type is "VoTT", this must be a path for the exported csv file. 
+        If label_type is "labelme", this must be a path for the directory that contains labelme's json output files.
+    out_path : str
+        The path for the output image (input image with detected results).
+    classes : dict of int
+        A dict of names and index of each classes. The keys must be the name of classes. The values must be the index of each classes (used by the classifier).
+    label_type : str
+        The type of label data, either "VoTT" (for VoTT's csv export) or "labelme" (for labelme's json export).
+    bb_color : dict of tuple
+        The RGB bounding box color values for each classes. RGB values should be 0-255 int.
+    conf_th : float default 0.99
+        The confidence threshold for each proposed bounding box.
+    iou_th : float default 0.3
+        The threshold of IoU value for Non-Maximum Supression of bounding boxes.
+    step_ratio : float default 0.5
+        The ratio between the step size and width or height of sliding windows.
+    input_size : list of int
+        The input size of the classifier
+    device : str default "cuda:0"
+        The device name to use for running the classifier.
+    
+    Returns
+    -------
+    detected_numbers : dict of int
+        The detected numbers of each classes
+    """
+    if label_type == "VoTT":
+        label_data = pd.read_csv(labels_path)
+    elif label_type == "labelme":
+        label_data = read_labelme(labels_path)
+    else:
+        raise Exception("Error: the annotation data is not supported")
+    labels = list(label_data["label"].unique())
+    label_data = label_data.assign(x = lambda df: df.xmax-df.xmin)
+    label_data = label_data.assign(y = lambda df: df.ymax-df.ymin)
+    label_data[["x", "y"]] = label_data[["x", "y"]].astype("int")
+    
+    with Image.open(image_path) as img:
+        img = np.expand_dims(np.asarray(img, np.float32).transpose([2, 0, 1]), axis=0) / 255.0
+    img = torch.as_tensor(img)
+
+    xy = label_data[["x", "y"]].values
+    
+    xm_c = kmeans_plusplus_initializer(xy, 4).initialize()
+    xm_i = xmeans(data=xy, initial_centers=xm_c, kmax=10, ccore=True)
+    xm_i.process()
+    xy = xm_i._xmeans__centers
+    
+    df = pd.DataFrame({"label":[],
+                       "conf":[],
+                       "xmin":[],
+                       "ymin":[],
+                       "xmax":[],
+                       "ymax":[]})
+
+    for size in tqdm(xy):
+        step = [int(size[0]*step_ratio), int(size[1]*step_ratio)]
+        p = img.unfold(2, int(size[1]), step[1]).unfold(3, int(size[0]), step[0])
+        patches = p.permute([0,2,3,1,4,5]).reshape(-1,3,int(size[1]), int(size[0]))
+        patches = F.interpolate(patches, tuple(input_size), mode="bilinear").to(device)
+        with torch.no_grad():
+            classifier.eval()
+            _y_pred = classifier.sample_mean({"x":patches}).detach().cpu()
+            y_pred = list(_y_pred.argmax(1).numpy())
+            conf = list(_y_pred.max(1)[0].numpy())
+            labels = []
+            for i in y_pred:
+                label = [k for k, v in classes.items() if v == int(i)]
+                labels.append(label[0])
+            xm = np.linspace(0, img.shape[3]-size[0], p.shape[3], endpoint=False, dtype=np.int)
+            ym = np.linspace(0, img.shape[2]-size[1], p.shape[2], endpoint=False, dtype=np.int)
+            #xmins = np.repeat(xm, ym.shape[0])
+            #ymins = np.array(list(ym)*xm.shape[0])
+            xmins = np.array(list(xm)*ym.shape[0])
+            ymins = np.repeat(ym, xm.shape[0])
+            xmaxes = xmins + size[0]
+            ymaxes = ymins + size[1]
+            xmaxes = xmaxes.astype(np.int)
+            ymaxes = ymaxes.astype(np.int)
+
+
+            d = pd.DataFrame({
+                "label":labels,
+                "conf":conf,
+                "xmin":xmins,
+                "ymin":ymins,
+                "xmax":xmaxes,
+                "ymax":ymaxes
+            })
+
+            df = pd.concat([df,d])
+
+    df = df[df["label"]!="other"]
+    df = df[df["conf"] > conf_th]
+    
+    bboxes = [(d["xmin"],d["ymin"],d["xmax"],d["ymax"]) for _, d in df.iterrows()]
+    confs = [d["conf"] for _, d in df.iterrows()]
+    labels = [d["label"] for _, d in df.iterrows()]
+    nms_res = nms(bboxes, confs, labels, iou_th)
+    
+    df2 = pd.DataFrame({"label":[],
+                       "xmin":[],
+                       "ymin":[],
+                       "xmax":[],
+                       "ymax":[]})
+    
+    for r in range(len(nms_res[0])):
+        df2 = df2.append({"label":nms_res[1][r],
+                        "xmin":nms_res[0][r][0],
+                        "ymin":nms_res[0][r][1],
+                        "xmax":nms_res[0][r][2],
+                        "ymax":nms_res[0][r][3]}, ignore_index=True)
+    
+    img = Image.open(image_path)
+    for _, d in df2.iterrows():
+        draw = ImageDraw.Draw(img)
+        text_w, text_h = draw.textsize(d["label"])
+        label_y = d["ymin"] if d["ymin"] <= text_h else d["ymin"] - text_h
+        draw.rectangle((d["xmin"], label_y, d["xmax"], d["ymax"]), outline=bb_color[d["label"]])
+        draw.rectangle((d["xmin"], label_y, d["xmin"]+text_w, label_y+text_h), outline=bb_color[d["label"]], fill=bb_color[d["label"]])
+        draw.text((d["xmin"], label_y), d["label"], fill=(255,255,255))
+    
+    detected_numbers = {}
+    
+    for c in classes:
+        if c != "other":
+            d = df2[df2["label"]==c]
+            detected_numbers[c] = len(d)
+    
+    img.save(out_path)
+    return detected_numbers
+
 
 class Detector:
     """
