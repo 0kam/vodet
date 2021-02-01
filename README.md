@@ -26,7 +26,32 @@ The data directory should have three subdirectories: `train`, `validation` and `
 The `train` and `validation` directory should have `source` and `labels` subdirectory, that contain source images and label data respectively.
 The `unlabelled` directory should only have `source` directory.
 The label data should be [VoTT](https://github.com/microsoft/VoTT)'s csv-export (sigle CSV file) or [labelme](https://github.com/wkentaro/labelme)'s json files.
-### Create an GMVAE instance
+#### Directory structure example
+```
+.
+├── train
+│   ├── labels
+│   │   └── IMAG0827.json
+│   └── source
+│       └── IMAG0827.JPG
+├── unlabelled
+│   └── source
+│       ├── IMAG0417.JPG
+│       ├── IMAG0441.JPG
+│       ├── IMAG0463.JPG
+│       ├── IMAG0485.JPG
+.               .
+.               .
+.               .
+│       └── IMAG1735.JPG
+└── validation
+    ├── labels
+    │   └── IMAG0986.json
+    └── source
+        └── IMAG0986.JPG
+```
+
+### Creating an GMVAE instance
 ```
 from vodet.gmvae import GMVAE
 data_dirs = {
@@ -36,11 +61,41 @@ data_dirs = {
 }
 gmvae = GMVAE(data_dirs)
 ```
-### Generate patch images
+### Generating patch images
 Inorder to train the GMVAE classifier model, first we separate source images into patches with labels based on label data.
-With train and validation images, vodet read the label data created by annotation tools. A patch that intersects with rectangular annotations will be labelled as the label name (e.g. `flower`), otherwise `others`.
+With train and validation images, vodet read the label data created by annotation tools. A patch that intersects with rectangular annotations will be labelled as the label name (e.g. `flower`), otherwise `others`. With unlabelled images, sliding-windows crop images into patches. The patch sizes are randomly selelcted from that of train label data. 
 ```
 gmvae.set_patches("labelme") # for labelme
 gmvae.set_patches("VoTT") # for VoTT
 ```
+Then `patches` directory will be created inside train, validation, unlabelled directory.
+```
+.
+├── train
+│   ├── labels
+│   ├── patches
+│   │   ├── flower
+│   │   └── other
+│   └── source
+├── unlabelled
+ with │   ├── patches
+│   │   └── unlabelled
+│   └── source
+└── validation
+    ├── labels
+    ├── patches
+    │   ├── flower
+    │   └── other
+    └── source
 
+```
+### Preparing Dataloaders
+Next, prepare `torch.utils.dataloader` with batch size and `torchvision.transforms`.
+```
+transforms =
+gmvae.set_dataloaders(batch_size=128, transforms=transforms)
+```
+### Model settings
+```
+
+```
