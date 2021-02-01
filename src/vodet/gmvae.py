@@ -187,7 +187,7 @@ class GMVAE:
         dt_now = datetime.datetime.now()
         exp_time = dt_now.strftime('%Y%m%d_%H:%M:%S')
         writer = SummaryWriter(str(Path(self.data_dirs["train"]).parent) + \
-            "runs/" + "vodet_gmvae_" + exp_time)
+            "/runs/" + "vodet_gmvae_" + exp_time)
         
         _x = []
         _y = []
