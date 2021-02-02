@@ -129,7 +129,7 @@ transform = \
 gmvae.set_dataloaders(batch_size=128, transforms=transforms)
 ```
 
-### Setting up the model
+### Model setting
 ```python=
 gmvae.set_model(z_dim=8, device="cuda:0")
 ```
