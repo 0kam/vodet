@@ -31,17 +31,18 @@ After getting a patch with a sliding window, the semi-supervised object classifi
 ### Image Annotating
 Before start, prepare annotation data to train a classifier.
 You should annotate at least two images; one for training and another for validating the model.
-The annotation shape have to be rectangulars. Since `vodet` use sliding-window method to detect the objects, very small sizes of rectangulars relative to the size of the image will cause very slow speed of detection. You should also make margines little bit larger than the shilhouette of objects for better classification acuraccy.
-You can use either [labelme](https://github.com/wkentaro/labelme) or [VoTT](https://github.com/microsoft/VoTT). Because labelme supports zooming of images, I recommend you to use it especially for high-resolution images.
+The annotation shape has to be rectangular. Since `vodet` uses the sliding-window method to detect the objects, very small sizes of rectangular relative to the size of the image will cause a very slow speed of detection. You should also make margins a little bit larger than the silhouettes of objects for better classification accuracy.
+You can use either [labelme](https://github.com/wkentaro/labelme) or [VoTT](https://github.com/microsoft/VoTT). Because labelme supports the zooming of images, I recommend you to use it, especially for high-resolution images.
 
 ### Setting up data directories
-The data directory should have three subdirectories: `train`, `validation` and `unlabelled`.
+The data directory should have three subdirectories: `train`, `validation`, and `unlabelled`.
 The `train` and `validation` directory should have `source` and `labels` subdirectory, that contain source images and label data respectively.
 The `unlabelled` directory should only have `source` directory.
-The label data should be [VoTT](https://github.com/microsoft/VoTT)'s csv-export (sigle CSV file) or [labelme](https://github.com/wkentaro/labelme)'s json files.
+The label data should be [VoTT](https://github.com/microsoft/VoTT)'s CSV-export (single CSV file) or [labelme](https://github.com/wkentaro/labelme)'s JSON files.
 
 **Notice:**
-All of the images you want to use in detection should be used in model training. Just push them all in `unlabelled` directory, except for labelled images.
+All of the images you want to use in detection should be used in model training. Just push them all in the `unlabelled` directory, except for labeled images.
+
 #### Directory structure example
 ```
 .
@@ -78,13 +79,16 @@ data_dirs = {
 gmvae = GMVAE(data_dirs)
 ```
 ### Generating patch images
-Inorder to train the GMVAE classifier model, first we separate source images into patches with labels based on label data.
-With train and validation images, vodet read the label data created by annotation tools. A patch that intersects with rectangular annotations will be labelled as the label name (e.g. `flower`), otherwise `others`. With unlabelled images, sliding-windows crop images into patches. The patch sizes are randomly selelcted from that of train label data. 
+To train the GMVAE classifier model, first, we separate source images into patches with labels based on label data.
+With train and validation images, vodet read the label data created by annotation tools. A patch that intersects with rectangular annotations will be labeled as the label name (e.g. `flower`), otherwise `others`. With unlabelled images, sliding-windows crop images into patches. The patch sizes are randomly selected from that of train label data. 
+
 ```
 gmvae.set_patches("labelme") # for labelme
 gmvae.set_patches("VoTT") # for VoTT
 ```
-Then `patches` directory will be created inside train, validation, unlabelled directory.
+
+Then `patches` directory will be created inside the train, validation, unlabelled directory.
+
 ```
 .
 ├── train
@@ -106,7 +110,8 @@ Then `patches` directory will be created inside train, validation, unlabelled di
 
 ```
 ### Preparing Dataloaders
-Next, prepare `torch.utils.dataloader` with batch size and `torchvision.transforms`.
+Next, prepare `torch.utils.dataloader` with batch size and [torchvision.transforms](https://pytorch.org/docs/stable/torchvision/transforms.html).
+
 ```python
 transform = \
     {"labelled":transforms.Compose(
@@ -155,7 +160,7 @@ Optimizer:
 ```python=
 gmvae.train(epochs=50, precision_th=95.0)
 ```
-While training, GMVAE instance automatically save the model parameters, as its attribute, with lowest test loss. You can set the threshold of test precision to do this with `precision_th`.
+While training, the GMVAE instance automatically saves the model parameters, as its attribute, with the lowest test loss. You can set the threshold of test precision to do this with `precision_th`.
 
 Metrics of each epoch will be printed.
 ```
@@ -163,8 +168,10 @@ Metrics of each epoch will be printed.
 Epoch: 1 Train loss: 666.0989
 Test Loss: tensor(0.3726, device='cuda:0') Test Recall: {'flower': 100.0, 'other': 90.0} Test Precision: {'flower': 89.74358974358974, 'other': 100.0}
 ```
+
 You can also inspect the training run with [tensorboardX](https://github.com/lanpa/tensorboardX)
-The `runs` directory that contains the data of past runs as subdirectory will be created. 
+The `runs` directory that contains the data of past runs as subdirectories will be created. 
+
 ```
 ├── runs
 │   └── vodet_gmvae_20210201_14:08:50
@@ -210,7 +217,7 @@ Both of the function returns the object names and detected numbers, and also dra
 
 ### Utility functions
 After running detection, you can plot detected results along time. 
-First, you should prepare a dataframe with `image` and `date` column that contains file name and shooting date of each image. You can generate this automatically by using `vodet.utils.exif_date()` like below.
+First, you should prepare a data frame with the `image` and `date` column that contains the file name and shooting date of each image. You can generate this automatically by using `vodet.utils.exif_date()` like below.
 ```python
 # Assume that the "source/" directory contains the original images with EXIF meta data.
 from vodet.utils import date_df = exif_date("source/")
