@@ -10,7 +10,8 @@ Welcome to vodet's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+.. automodule:: BrewFile
+   :members:
 
 Indices and tables
 ==================
