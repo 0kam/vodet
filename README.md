@@ -68,7 +68,7 @@ All of the images you want to use in detection should be used in model training.
 ```
 
 ### Creating an GMVAE instance
-```python=
+```python
 from vodet.gmvae import GMVAE
 data_dirs = {
     "train" = path_for_your_train_directory,
@@ -107,7 +107,7 @@ Then `patches` directory will be created inside train, validation, unlabelled di
 ```
 ### Preparing Dataloaders
 Next, prepare `torch.utils.dataloader` with batch size and `torchvision.transforms`.
-```python=
+```python
 transform = \
     {"labelled":transforms.Compose(
         [transforms.Resize((24,24)),
@@ -130,7 +130,7 @@ gmvae.set_dataloaders(batch_size=128, transforms=transforms)
 ```
 
 ### Model setting
-```python=
+```python
 gmvae.set_model(z_dim=8, device="cuda:0")
 ```
 Then the model structure will be printed.
@@ -192,7 +192,7 @@ tensorboard --logdir runs/vodet_gmvae_20210201_14:08:50/
 ```
 ### Detection
 First, creat a classifier instance.
-```
+```python
 d = gmvae.detector(label_type="labelme", conf_th=0.99, step_ratio = 0.5, iou_th=0.05)
 ```
 - `label_type`: "labelme" or "VoTT"
@@ -202,7 +202,7 @@ d = gmvae.detector(label_type="labelme", conf_th=0.99, step_ratio = 0.5, iou_th=
 
 The detector object can perform detection for either single image or multiple images in a directory.
 
-```python=
+```python
 result_dict = d.detect_img("image_path", "out_path") # Single image
 result_df = d.detect_dir("in_directory", "out_directory") # Multiple images in a directory
 ```
@@ -211,11 +211,11 @@ Both of the function returns the object names and detected numbers, and also dra
 ### Utility functions
 After running detection, you can plot detected results along time. 
 First, you should prepare a dataframe with `image` and `date` column that contains file name and shooting date of each image. You can generate this automatically by using `vodet.utils.exif_date()` like below.
-```python=
+```python
 # Assume that the "source/" directory contains the original images with EXIF meta data.
 from vodet.utils import date_df = exif_date("source/")
 ```
 Then pass it to the detector instance.
-```python=
+```python
 resutl_df = d.draw_barplot(date_df)
 ```
