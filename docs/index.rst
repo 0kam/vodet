@@ -18,9 +18,9 @@ annotation images. Though `vodet` assumes time-lapse images,
 it may work well with other kinds of images if the sizes of objects 
 do not vary by images.
 
-Contents:
 
 .. toctree::
    :maxdepth: 2
+   :caption: Contents:
    
    vodet
