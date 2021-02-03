@@ -2,6 +2,7 @@ from glob import glob
 from PIL import Image, ImageDraw
 import torch
 import torch.nn.functional as F 
+from torch.utils.data import TensorDataset
 import numpy as np
 import pandas as pd
 import statistics as stat
@@ -235,7 +236,7 @@ def detect_old(classifier, image_path, labels_path, out_path, classes, label_typ
     return detected_numbers
 
 
-def detect(classifier, image_path, labels_path, out_path, classes, label_type, bb_color, conf_th=0.99, iou_th=0.3, step_ratio = 0.5, input_size=[24,24], device="cuda:0"):
+def detect(classifier, image_path, labels_path, out_path, classes, label_type, bb_color, conf_th=0.99, iou_th=0.3, step_ratio = 0.5, input_size=[24,24]):
     """
     Detect object with GMVAE's classifier and sliding windows.
 
@@ -264,8 +265,6 @@ def detect(classifier, image_path, labels_path, out_path, classes, label_type, b
         The ratio between the step size and width or height of sliding windows.
     input_size : list of int
         The input size of the classifier
-    device : str default "cuda:0"
-        The device name to use for running the classifier.
     
     Returns
     -------
@@ -305,9 +304,10 @@ def detect(classifier, image_path, labels_path, out_path, classes, label_type, b
         step = [int(size[0]*step_ratio), int(size[1]*step_ratio)]
         p = img.unfold(2, int(size[1]), step[1]).unfold(3, int(size[0]), step[0])
         patches = p.permute([0,2,3,1,4,5]).reshape(-1,3,int(size[1]), int(size[0]))
-        patches = F.interpolate(patches, tuple(input_size), mode="bilinear").to(device)
+        patches = F.interpolate(patches, tuple(input_size), mode="bilinear")
         with torch.no_grad():
             classifier.eval()
+            classifier.to("cpu")
             _y_pred = classifier.sample_mean({"x":patches}).detach().cpu()
             y_pred = list(_y_pred.argmax(1).numpy())
             conf = list(_y_pred.max(1)[0].numpy())

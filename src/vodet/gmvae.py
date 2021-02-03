@@ -269,5 +269,5 @@ class GMVAE:
             labels_path = self.data_dirs["train"] + "/labels/"
         else:
             raise Exception("Error: the annotation data is not supported")
-        d = Detector(self.best_f, self.classes, labels_path, label_type, conf_th , iou_th, step_ratio, input_size, self.device)
+        d = Detector(self.best_f, self.classes, labels_path, label_type, conf_th , iou_th, step_ratio, input_size)
         return d
