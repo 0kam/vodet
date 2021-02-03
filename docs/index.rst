@@ -23,4 +23,7 @@ do not vary by images.
    :maxdepth: 2
    :caption: Contents:
    
+   installation
+   algorithm
+   usage
    vodet
