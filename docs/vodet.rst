@@ -12,11 +12,3 @@ Submodules
    vodet.distributions
    vodet.gmvae
    vodet.utils
-
-Module contents
----------------
-
-.. automodule:: vodet
-   :members:
-   :undoc-members:
-   :show-inheritance:
