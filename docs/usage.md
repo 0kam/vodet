@@ -83,7 +83,12 @@ Then `patches` directory will be created inside the train, validation, unlabelle
 ## Preparing Dataloaders
 Next, prepare `torch.utils.dataloader` with batch size and [torchvision.transforms](https://pytorch.org/docs/stable/torchvision/transforms.html).
 
+**Important Notice**
+- At least, `transforms.Resize((24,24))` and `transforms.ToTensor()` is required.
+- The size of `transforms.Resize()` **must be (24,24)**.
+
 ```python
+from torchvision import transforms
 transform = \
     {"labelled":transforms.Compose(
         [transforms.Resize((24,24)),
