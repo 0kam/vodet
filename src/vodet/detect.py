@@ -31,10 +31,9 @@ def iou(a, b):
         A tuple of size 4. Each element stands for x1, y1, x2, y2 of the bounding box
     
     Returns
+    -------
     iou : float
         The calculated IoU value.
-    -------
-
     """
     a_x1, a_y1, a_x2, a_y2 = a
     b_x1, b_y1, b_x2, b_y2 = b
@@ -66,8 +65,8 @@ def nms(bboxes: list, scores: list, labels: list, iou_threshold: float) -> (list
     labels : list of str
         A list of label names of each bounding box.
 
-    Returns:
-    --------
+    Returns
+    -------
     new_bboxes : list of tuple
         A list of survived bounding boxes.
     new_labels : list of str
