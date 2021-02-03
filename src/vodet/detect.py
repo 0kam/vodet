@@ -402,11 +402,9 @@ class Detector:
         The ratio between the step size and width or height of sliding windows.
     input_size : list of int
         The input size of the classifier
-    device : str default "cuda:0"
-        The device name to use for running the classifier.
 
     """
-    def __init__(self, classifier, classes, labels_path, label_type = "labelme", conf_th = 0.95, iou_th = 0.3, step_ratio = 0.5, input_size = [24, 24], device="cuda:0"):
+    def __init__(self, classifier, classes, labels_path, label_type = "labelme", conf_th = 0.95, iou_th = 0.3, step_ratio = 0.5, input_size = [24, 24]):
         """
         Parameters
         ----------
@@ -440,7 +438,6 @@ class Detector:
         self.iou_th = iou_th
         self.step_ratio = step_ratio
         self.input_size = input_size
-        self.device = device
         self.detected = None
     
     def detect_img(self, in_path, out_path):
@@ -466,7 +463,7 @@ class Detector:
             if c != "other":
                 bb_color[c] = tuple(int(cmap(i)[j]*255) for j in range(3))
             i += 1
-        nums = detect(self.classifier, in_path, self.labels_path, out_path, self.classes, self.label_type, bb_color, self.conf_th, self.iou_th, self.step_ratio, self.input_size, self.device)
+        nums = detect(self.classifier, in_path, self.labels_path, out_path, self.classes, self.label_type, bb_color, self.conf_th, self.iou_th, self.step_ratio, self.input_size)
         return nums
     
     def detect_dir(self, in_dir, out_dir):
