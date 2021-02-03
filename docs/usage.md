@@ -69,7 +69,7 @@ Then `patches` directory will be created inside the train, validation, unlabelle
 │   │   └── other
 │   └── source
 ├── unlabelled
- with │   ├── patches
+│   ├── patches
 │   │   └── unlabelled
 │   └── source
 └── validation
