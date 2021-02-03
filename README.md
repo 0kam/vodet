@@ -1,9 +1,9 @@
 # vodet
-Variational Object DETector for time-lapse images.
-[docs](https://vodet.readthedocs.io/en/latest/index.html
+Variational Object DETector for time-lapse images.  
+[Documentation](https://vodet.readthedocs.io/en/latest/index.html)
 
 ## Overview
-`vodet` is a simple library for semi-supervised object detection for anything using [pixyz](https://github.com/masa-su/pixyz) and [PyTorch](https://pytorch.org/). Since [Gaussian-Mixture Variational Auto Encoder (GMVAE)](http://ruishu.io/2016/12/25/gmvae/) is used in the image classifier, it requires a very small amount (two or three) of annotation images. Though `vodet` assumes time-lapse images, it may work well with other kinds of images if the sizes of objects do not vary by images. More details and usages are available at the [document page](https://vodet.readthedocs.io/en/latest/index.html).
+`vodet` is a simple library for semi-supervised object detection for anything using [pixyz](https://github.com/masa-su/pixyz) and [PyTorch](https://pytorch.org/). Since [Gaussian-Mixture Variational Auto Encoder (GMVAE)](http://ruishu.io/2016/12/25/gmvae/) is used in the image classifier, it requires a very small amount (two or three) of annotation images. Though `vodet` assumes time-lapse images, it may work well with other kinds of images if the sizes of objects do not vary by images. More details and usages are available at the [documentation](https://vodet.readthedocs.io/en/latest/index.html).
 
 ## Installation
 `pip install git+https://github.com/0kam/vodet`
