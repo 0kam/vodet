@@ -63,6 +63,9 @@ class GMVAE:
         transforms: dict 
             A dict of transforms each made by torchvision.transforms.Comose().
             The keys must be "train", "validation" and "unlabelled"
+            At least, `transforms.Resize((24,24))` and `transforms.ToTensor()` is required.
+            The size of `transforms.Resize()` **must be (24,24)**.
+
         """
         unlabelled_ds = datasets.ImageFolder(self.data_dirs["unlabelled"]+"/patches", transforms["unlabelled"])
         train_ds = datasets.ImageFolder(self.data_dirs["train"]+"/patches", transforms["labelled"])
