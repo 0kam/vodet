@@ -107,7 +107,7 @@ transform = \
         ])
     }
     
-gmvae.set_dataloaders(batch_size=128, transforms=transforms)
+gmvae.set_dataloaders(batch_size=128, transforms=transform)
 ```
 
 ## Model setting
