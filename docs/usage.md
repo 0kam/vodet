@@ -5,7 +5,7 @@ You should annotate at least two images; one for training and another for valida
 The annotation shape has to be rectangular. Since `vodet` uses the sliding-window method to detect the objects, very small sizes of rectangular relative to the size of the image will cause a very slow speed of detection. You should also make margins a little bit larger than the silhouettes of objects for better classification accuracy.
 You can use either [labelme](https://github.com/wkentaro/labelme) or [VoTT](https://github.com/microsoft/VoTT). Because labelme supports the zooming of images, I recommend you to use it, especially for high-resolution images.
 ![](images/labelme.png)
-*A screen shot of labelme's graphic interface*
+*A screen shot of labelme's user interface*
 
 ## Setting up data directories
 The data directory should have three subdirectories: `train`, `validation`, and `unlabelled`.
