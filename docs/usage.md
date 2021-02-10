@@ -4,6 +4,8 @@ Before start, prepare annotation data to train a classifier.
 You should annotate at least two images; one for training and another for validating the model.
 The annotation shape has to be rectangular. Since `vodet` uses the sliding-window method to detect the objects, very small sizes of rectangular relative to the size of the image will cause a very slow speed of detection. You should also make margins a little bit larger than the silhouettes of objects for better classification accuracy.
 You can use either [labelme](https://github.com/wkentaro/labelme) or [VoTT](https://github.com/microsoft/VoTT). Because labelme supports the zooming of images, I recommend you to use it, especially for high-resolution images.
+![](images/labelme.png)
+*A screen shot of labelme's graphic interface*
 
 ## Setting up data directories
 The data directory should have three subdirectories: `train`, `validation`, and `unlabelled`.
@@ -173,6 +175,9 @@ In this case, you can start tensorboard by running below in your terminal.
 ```
 tensorboard --logdir runs/vodet_gmvae_20210201_14:08:50/
 ```
+![](images/tensorboard1.png)
+![](images/tensorboard2.png)
+
 ## Detection
 First, creat a classifier instance.
 ```python
@@ -190,6 +195,7 @@ result_dict = d.detect_img("image_path", "out_path") # Single image
 result_df = d.detect_dir("in_directory", "out_directory") # Multiple images in a directory
 ```
 Both of the function returns the object names and detected numbers, and also draw result image(s) in given path/directory.
+![](images/2013082612.jpg)
 
 ## Utility functions
 After running detection, you can plot detected results along time. 
@@ -202,3 +208,7 @@ Then pass it to the detector instance.
 ```python
 resutl_df = d.draw_barplot(date_df)
 ```
+![](images/detected.png)
+
+## Acknowledgements
+All the example photographs of yellow flowers (*Solidago gigantea*) are taken at Tomakomai Flux Research Site in Tomakomai National Forest, Hokkaido, Japan, 2013 summer.
