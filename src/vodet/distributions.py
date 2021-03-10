@@ -91,6 +91,7 @@ class Classifier(RelaxedCategorical):
         h = self.fc1(h)
         h = self.prelu3(h)
         h = F.softmax(self.fc2(h), dim=1)
+        h = h + 1e-7
         return {"probs": h}
 
 
