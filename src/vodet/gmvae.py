@@ -73,7 +73,7 @@ class GMVAE:
         val_ds = datasets.ImageFolder(self.data_dirs["validation"]+"/patches", transforms["validation"])
         self.unlabelled = DataLoader(unlabelled_ds, batch_size, shuffle=True)
         self.labelled = DataLoader(train_ds, batch_size, shuffle=True)
-        self.validation = DataLoader(val_ds, batch_size)
+        self.validation = DataLoader(val_ds, batch_size, shuffle=True)
         self.classes = train_ds.class_to_idx
         self.y_dim = len(self.classes)
     
@@ -116,8 +116,8 @@ class GMVAE:
         rate = 1 * (len(self.unlabelled) + len(self.labelled)) / len(self.labelled)
         
         self.loss_cls = -elbo_u.mean() -elbo.mean() + (rate * nll).mean()
-        
-        self.model = Model(self.loss_cls,test_loss=nll.mean(),
+        self.test_loss_cls = -elbo.mean() + nll.mean()
+        self.model = Model(self.loss_cls,test_loss=self.test_loss_cls,
                       distributions=[self.p, self.q, self.f, self.prior], optimizer=optim.RAdam, optimizer_params={"lr":1e-3})
         print("Model:")
         print(self.model)
