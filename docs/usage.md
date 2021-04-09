@@ -45,9 +45,9 @@ All of the images you want to use in detection should be used in model training.
 ```python
 from vodet.gmvae import GMVAE
 data_dirs = {
-    "train" = path_for_your_train_directory,
-    "validation" = path_for_your_validation_directory,
-    "unlabelled" = path_for_your_unlabelled_directory
+    "train" : path_for_your_train_directory,
+    "validation" : path_for_your_validation_directory,
+    "unlabelled" : path_for_your_unlabelled_directory
 }
 gmvae = GMVAE(data_dirs)
 ```
