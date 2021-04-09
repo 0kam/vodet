@@ -1,4 +1,5 @@
-from torch import nn, optim
+from torch import nn
+import torch_optimizer as optim
 import torch
 from torch._C import import_ir_module
 from torch.nn import functional as F
@@ -70,8 +71,8 @@ class GMVAE:
         unlabelled_ds = datasets.ImageFolder(self.data_dirs["unlabelled"]+"/patches", transforms["unlabelled"])
         train_ds = datasets.ImageFolder(self.data_dirs["train"]+"/patches", transforms["labelled"])
         val_ds = datasets.ImageFolder(self.data_dirs["validation"]+"/patches", transforms["validation"])
-        self.unlabelled = DataLoader(unlabelled_ds, batch_size)
-        self.labelled = DataLoader(train_ds, batch_size, shuffle = True)
+        self.unlabelled = DataLoader(unlabelled_ds, batch_size, shuffle=True)
+        self.labelled = DataLoader(train_ds, batch_size, shuffle=True)
         self.validation = DataLoader(val_ds, batch_size)
         self.classes = train_ds.class_to_idx
         self.y_dim = len(self.classes)
@@ -117,7 +118,7 @@ class GMVAE:
         self.loss_cls = -elbo_u.mean() -elbo.mean() + (rate * nll).mean()
         
         self.model = Model(self.loss_cls,test_loss=nll.mean(),
-                      distributions=[self.p, self.q, self.f, self.prior], optimizer=optim.Adam, optimizer_params={"lr":1e-3})
+                      distributions=[self.p, self.q, self.f, self.prior], optimizer=optim.RAdam, optimizer_params={"lr":1e-3})
         print("Model:")
         print(self.model)
     

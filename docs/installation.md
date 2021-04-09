@@ -12,4 +12,5 @@ torchvision
 numpy>=1.17.4
 Pillow>=8.1.0
 tensorboardX>=2.1
+torch-optimizer
 ```
