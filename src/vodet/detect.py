@@ -235,7 +235,6 @@ def detect_old(classifier, image_path, labels_path, out_path, classes, label_typ
     img.save(out_path)
     return detected_numbers
 
-
 def detect(classifier, image_path, labels_path, out_path, classes, label_type, bb_color, conf_th=0.99, iou_th=0.3, step_ratio = 0.5, input_size=[24,24]):
     """
     Detect object with GMVAE's classifier and sliding windows.
@@ -358,7 +357,7 @@ def detect(classifier, image_path, labels_path, out_path, classes, label_type, b
                         "ymin":nms_res[0][r][1],
                         "xmax":nms_res[0][r][2],
                         "ymax":nms_res[0][r][3]}, ignore_index=True)
-    
+    df2["image"] = Path(image_path).name
     img = Image.open(image_path)
     for _, d in df2.iterrows():
         draw = ImageDraw.Draw(img)
@@ -368,15 +367,8 @@ def detect(classifier, image_path, labels_path, out_path, classes, label_type, b
         draw.rectangle((d["xmin"], label_y, d["xmin"]+text_w, label_y+text_h), outline=bb_color[d["label"]], fill=bb_color[d["label"]])
         draw.text((d["xmin"], label_y), d["label"], fill=(255,255,255))
     
-    detected_numbers = {}
-    
-    for c in classes:
-        if c != "other":
-            d = df2[df2["label"]==c]
-            detected_numbers[c] = len(d)
-    
     img.save(out_path)
-    return detected_numbers
+    return df2
 
 
 class Detector:
@@ -486,15 +478,12 @@ class Detector:
             shutil.rmtree(out_dir)
         os.mkdir(out_dir)
 
-        columns = list(self.classes.keys())
-        columns.append("image")
-        columns.remove("other")
+        columns = ["image", "label", "xmin", "ymin", "xmax", "ymax"]
         df = pd.DataFrame(columns=columns)
         files = sorted(glob(in_dir+"/*"))
         for f in files:
-            num = self.detect_img(f, f.replace(in_dir, out_dir + "/"))
-            num["image"] = Path(f).name
-            df = df.append(num, ignore_index=True)
+            results = self.detect_img(f, f.replace(in_dir, out_dir + "/"))
+            df = df.append(results, ignore_index=True)
         self.detected = df
         return df
     
@@ -517,6 +506,7 @@ class Detector:
         df : pd.DataFrame
             A dataframe of detected result with "date" column. 
         """
+        numbers = self.detected.groupby("image").size()
         df = pd.merge(self.detected, date_df)
         df = df.set_index("date").sort_index()
         self.detected = df
@@ -527,4 +517,23 @@ class Detector:
         plt.tight_layout()
         plt.savefig(out_path)
         return df
-        
+    
+    def track_flowers(iou_th):
+        flowers = []
+        for target in np.unique(self.detected["label"]):
+            df = self.detected[self.detected["label"] == target]
+            while(len(df) > 0):
+                row = df[0:1]
+                flower = [i[1] for i in row.iterrows()]
+                image = row["image"].item()
+                bbox = tuple(row[["xmin","ymin","xmax","ymax"]].values[0])
+                d = df[df["image"]!=image]
+                for index, r in d.iterrows():
+                    bbox2 = (r.xmin,r.ymin,r.xmax,r.ymax)
+                    if iou(bbox, bbox2) > iou_th:
+                        flower.append(r)
+                        df = df.drop(index)
+                df = df.drop(row.index)
+                flower = pd.DataFrame(flower)
+                flowers.append(flower)
+        return flowers
