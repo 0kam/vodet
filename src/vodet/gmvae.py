@@ -116,7 +116,7 @@ class GMVAE:
         rate = 1 * (len(self.unlabelled) + len(self.labelled)) / len(self.labelled)
         
         self.loss_cls = -elbo_u.mean() -elbo.mean() + (rate * nll).mean()
-        self.test_loss_cls = -elbo.mean() + nll.mean()
+        self.test_loss_cls = nll.mean() #-elbo.mean()
         self.model = Model(self.loss_cls,test_loss=self.test_loss_cls,
                       distributions=[self.p, self.q, self.f, self.prior], optimizer=optim.RAdam, optimizer_params={"lr":1e-3})
         print("Model:")
