@@ -42,7 +42,7 @@ class GMVAE:
         """
         self.data_dirs = data_dirs
 
-    def set_patches(self, label_type):
+    def set_patches(self, label_type, step_ratio=1.0):
         """
         Split source images into patches with labels to train GMVAE classifier.
 
@@ -50,8 +50,10 @@ class GMVAE:
         ----------
         label_type : str
             The type of label images. Either "VoTT" for VoTT's csv export or "labelme" for labelme's json output.
+        step_ratio : float default 1.0
+            Sliding window step size relative to the size of patches.
         """
-        set_patches(self.data_dirs, label_type)
+        set_patches(self.data_dirs, label_type, step_ratio)
     
     def set_dataloaders(self, batch_size, transforms):
         """
