@@ -189,7 +189,7 @@ class GMVAE:
             If the minimum precision in each epoch is larger than this value and the test loss is lower than previous "best model", the "best model" will be overwritten.
         """
         dt_now = datetime.datetime.now()
-        exp_time = dt_now.strftime('%Y%m%d_%H:%M:%S')
+        exp_time = dt_now.strftime('%Y%m%d_%H_%M_%S')
         writer = SummaryWriter(str(Path(self.data_dirs["train"]).parent) + \
             "/runs/" + "vodet_gmvae_" + exp_time)
         

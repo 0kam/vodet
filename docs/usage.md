@@ -51,6 +51,19 @@ data_dirs = {
 }
 gmvae = GMVAE(data_dirs)
 ```
+
+for example, 
+
+```python
+from vodet.gmvae import GMVAE
+data_dirs = {
+    "train" : "./train/",
+    "validation" : "./validation/,
+    "unlabelled" : "./unlabelled/"
+}
+gmvae = GMVAE(data_dirs)
+```
+
 ## Generating patch images
 To train the GMVAE classifier model, first, we separate source images into patches with labels based on label data.
 With train and validation images, vodet read the label data created by annotation tools. A patch that intersects with rectangular annotations will be labeled as the label name (e.g. `flower`), otherwise `others`. With unlabelled images, sliding-windows crop images into patches. The patch sizes are randomly selected from that of train label data. 
@@ -194,6 +207,14 @@ The detector object can perform detection for either single image or multiple im
 result_dict = d.detect_img("image_path", "out_path") # Single image
 result_df = d.detect_dir("in_directory", "out_directory") # Multiple images in a directory
 ```
+
+for example,
+
+```python
+result_dict = d.detect_img("./test_data/test.jpg", "test_out.png") # Single image
+result_df = d.detect_dir("./test_data/", "./test_out/") # Multiple images in a directory
+```
+
 Both of the function returns the object names and detected numbers, and also draw result image(s) in given path/directory.
 ![](images/2013082612.jpg)
 
