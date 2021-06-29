@@ -44,7 +44,7 @@ def read_labelme(in_dir):
         dataframe = pd.merge(dataframe, df, how = "outer")
     return dataframe
 
-def make_patches_labelled(data_dir, out_dir, label_data):
+def make_patches_labelled(data_dir, out_dir, label_data, step_ratio):
     """
     Split source images with labels.
 
@@ -54,6 +54,8 @@ def make_patches_labelled(data_dir, out_dir, label_data):
         The path for data directory.
     out_dir : str
         The path for output (patched images) directory.
+    step_ratio : float
+        Sliding window step size relative to the size of patches.
     """
     img_paths = [str(p) for p in glob(data_dir + "/source/*") \
         if re.search(".*\.[jpg, jpeg, JPG, png]", p)] 
@@ -84,7 +86,7 @@ def make_patches_labelled(data_dir, out_dir, label_data):
         y_mean = int(stat.mean(label_data["y"]))
         x_bound = math.ceil(max(label_data["x"]))
         y_bound = math.ceil(max(label_data["y"]))
-        step = [int(x_mean), int(y_mean)]
+        step = [int(x_mean * step_ratio), int(y_mean * step_ratio)]
 
         x_centers = range(x_bound, img.size[0]-x_bound, step[0])
         y_centers = range(y_bound, img.size[1]-y_bound, step[1])
@@ -116,6 +118,8 @@ def make_patches_unlabelled(data_dir, out_dir, label_data):
         The path for output (patched images) directory.
     label_data : pd.DataFrame
         A dataframe of label data. This will be used to determine the sizes of patches.
+    step_ratio : float
+        Sliding window step size relative to the size of patches.
     """
     img_paths = [str(p) for p in glob(data_dir + "/source/*") \
         if re.search(".*\.[jpg, jpeg, JPG, png]", p)] 
@@ -134,7 +138,7 @@ def make_patches_unlabelled(data_dir, out_dir, label_data):
         y_mean = int(stat.mean(label_data["y"]))
         x_bound = math.ceil(max(label_data["x"]))
         y_bound = math.ceil(max(label_data["y"]))
-        step = [int(x_mean), int(y_mean)]
+        step = [int(x_mean * step_ratio), int(y_mean * step_ratio)]
 
         x_centers = range(x_bound, img.size[0]-x_bound, step[0])
         y_centers = range(y_bound, img.size[1]-y_bound, step[1])
@@ -150,7 +154,7 @@ def make_patches_unlabelled(data_dir, out_dir, label_data):
                 j += 1
             i += 1
 
-def set_patches(data_dirs, label_type):
+def set_patches(data_dirs, label_type, step_ratio=1.0):
     """
     Making labelled and unlabelled patches from annotated images. 
     The annotation shape must be rectangulars.
@@ -165,6 +169,8 @@ def set_patches(data_dirs, label_type):
         - /labels: a sub-directory with label data. label data should be VoTT csv-export file (.csv) or labelme output file (.json)
     label_type: str
         The type of label files, "VoTT" and "labelme" are available.
+    step_ratio : float default 1.0
+        Sliding window step size relative to the size of patches.
     """  
     # train data
     ## label set up
@@ -182,7 +188,7 @@ def set_patches(data_dirs, label_type):
     label_data[["x", "y"]] = label_data[["x", "y"]].astype("int")
     ## generate patches
     print("Start processing train data!")
-    make_patches_labelled(data_dirs["train"], data_dirs["train"]+"/patches", label_data)
+    make_patches_labelled(data_dirs["train"], data_dirs["train"]+"/patches", label_data, step_ratio)
 
     # validation data
     ## label set up
@@ -200,7 +206,7 @@ def set_patches(data_dirs, label_type):
     label_data[["x", "y"]] = label_data[["x", "y"]].astype("int")
     ## generate patches
     print("Start processing validation data!")
-    make_patches_labelled(data_dirs["validation"], data_dirs["validation"]+"/patches", label_data)
+    make_patches_labelled(data_dirs["validation"], data_dirs["validation"]+"/patches", label_data, step_ratio)
 
     # unlabelled data
     ## to define the patch size, use label data for train
@@ -218,7 +224,7 @@ def set_patches(data_dirs, label_type):
     label_data[["x", "y"]] = label_data[["x", "y"]].astype("int")
     ## generate patches
     print("Start processing unlabelled data!")
-    make_patches_unlabelled(data_dirs["unlabelled"], data_dirs["unlabelled"]+"/patches", label_data)
+    make_patches_unlabelled(data_dirs["unlabelled"], data_dirs["unlabelled"]+"/patches", label_data, step_ratio)
 
 def plot_reconstruction(x, y, p, q):
     with torch.no_grad():
