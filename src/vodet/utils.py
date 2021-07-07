@@ -106,7 +106,7 @@ def make_patches_labelled(data_dir, out_dir, label_data, step_ratio):
             i += 1
 
 
-def make_patches_unlabelled(data_dir, out_dir, label_data):
+def make_patches_unlabelled(data_dir, out_dir, label_data, step_ratio):
     """
     Split source images into patches. The patch sizes are determined by label_data.
 
@@ -224,7 +224,7 @@ def set_patches(data_dirs, label_type, step_ratio=1.0):
     label_data[["x", "y"]] = label_data[["x", "y"]].astype("int")
     ## generate patches
     print("Start processing unlabelled data!")
-    make_patches_unlabelled(data_dirs["unlabelled"], data_dirs["unlabelled"]+"/patches", label_data)
+    make_patches_unlabelled(data_dirs["unlabelled"], data_dirs["unlabelled"]+"/patches", label_data, step_ratio)
 
 def plot_reconstruction(x, y, p, q):
     with torch.no_grad():
