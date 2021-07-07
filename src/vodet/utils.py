@@ -224,7 +224,7 @@ def set_patches(data_dirs, label_type, step_ratio=1.0):
     label_data[["x", "y"]] = label_data[["x", "y"]].astype("int")
     ## generate patches
     print("Start processing unlabelled data!")
-    make_patches_unlabelled(data_dirs["unlabelled"], data_dirs["unlabelled"]+"/patches", label_data, step_ratio)
+    make_patches_unlabelled(data_dirs["unlabelled"], data_dirs["unlabelled"]+"/patches", label_data)
 
 def plot_reconstruction(x, y, p, q):
     with torch.no_grad():
